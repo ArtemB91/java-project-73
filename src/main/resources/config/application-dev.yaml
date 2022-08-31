@@ -1,0 +1,24 @@
+server:
+  error:
+    include-stacktrace: on_param
+
+spring:
+  datasource:
+    url: jdbc:h2:./task-manager-db
+    username: sa
+    password:
+
+  jpa:
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2console/
+      settings:
+        web-allow-others: true
+
+  logging:
+    level:
+      root: INFO
+      web: DEBUG

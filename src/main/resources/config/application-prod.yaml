@@ -1,0 +1,22 @@
+server:
+  error:
+    include-stacktrace: never
+
+spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  datasource:
+    url: ${JDBC_DATABASE_URL}
+    username: ${JDBC_DATABASE_USERNAME}
+    password: ${JDBC_DATABASE_PASSWORD}
+
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    ROOT: INFO
