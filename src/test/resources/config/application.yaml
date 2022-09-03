@@ -23,6 +23,7 @@ spring:
 logging:
   level:
     root: INFO
+    org.springframework.security: TRACE
     # web: DEBUG
     # org.hibernate.type.descriptor.sql: TRACE
     # io.hexlet.typoreporter: DEBUG

@@ -18,7 +18,9 @@ spring:
       settings:
         web-allow-others: true
 
-  logging:
-    level:
-      root: INFO
-      web: DEBUG
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: DEBUG
+    #org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG

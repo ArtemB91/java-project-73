@@ -1,37 +1,38 @@
 package hexlet.code.controller;
 
-import hexlet.code.dto.UserShortDto;
 import hexlet.code.dto.UserDto;
+import hexlet.code.dto.UserShortDto;
 import hexlet.code.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-
-
-
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-public final class UserController {
+public class UserController {
 
     @Autowired
     private UserService userService;
+
+    // Бин userService в глобальном контексте не нашел, поэтому надо либо обращаться к реализации,
+    // либо через @Component делать бин заранее, либо к репо напрямую обращаться.
+    // Выбрал последний вариант.
+    private static final String ONLY_THE_SAME_USER = """
+            @userRepository.findById(#id).get().getEmail() == authentication.getName()
+        """;
+
 
     @GetMapping(path = "/{id}")
     public UserShortDto getUser(@PathVariable(value = "id") Long id) {
@@ -51,26 +52,16 @@ public final class UserController {
     }
 
     @PutMapping(path = "/{id}")
+    @PreAuthorize(ONLY_THE_SAME_USER)
     public UserShortDto updateUser(@PathVariable(value = "id") Long id,
                                    @Valid @RequestBody UserDto userDto) {
         return userService.updateUser(id, userDto);
     }
 
-    @DeleteMapping(path = "/id")
+    @DeleteMapping(path = "/{id}")
+    @PreAuthorize(ONLY_THE_SAME_USER)
     public void deleteUser(@PathVariable(value = "id") Long id) {
         userService.deleteUser(id);
-    }
-
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
     }
 
 }

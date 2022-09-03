@@ -1,24 +1,29 @@
 package hexlet.code.service;
 
 import hexlet.code.UserNotFoundException;
-import hexlet.code.dto.UserShortDto;
 import hexlet.code.dto.UserDto;
+import hexlet.code.dto.UserShortDto;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.StreamSupport;
 
 @Service
-public final class UserServiceImpl implements UserService {
-    @Autowired
+public final class UserServiceImpl implements UserService, UserDetailsService {
     private UserRepository userRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public UserShortDto getUserById(Long id) {
         User user = userRepository.findById(id)
@@ -72,4 +77,15 @@ public final class UserServiceImpl implements UserService {
         return convertToUser(new User(), userDto);
     }
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority("USER"))
+        );
+    }
 }
