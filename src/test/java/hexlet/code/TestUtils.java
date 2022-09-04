@@ -65,11 +65,16 @@ public final class TestUtils {
         return mockMvc.perform(request);
     }
 
-    public ResultActions perform(final MockHttpServletRequestBuilder request, final String byUser) throws Exception {
+    public ResultActions performByUser(final MockHttpServletRequestBuilder request,
+                                       final String byUser) throws Exception {
         final String token = jwtHelper.expiring(Map.of("username", byUser));
         request.header(AUTHORIZATION, token);
 
         return perform(request);
+    }
+
+    public ResultActions performByUser(final MockHttpServletRequestBuilder request) throws Exception {
+        return performByUser(request, defaultUserDto().getEmail());
     }
 
 }

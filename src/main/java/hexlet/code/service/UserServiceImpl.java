@@ -1,8 +1,8 @@
 package hexlet.code.service;
 
-import hexlet.code.UserNotFoundException;
 import hexlet.code.dto.UserDto;
 import hexlet.code.dto.UserShortDto;
+import hexlet.code.exceptions.DataNotFoundException;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,7 +27,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
 
     public UserShortDto getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
         return convertToUserShortDto(user);
     }
 
@@ -44,14 +44,14 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
 
     public UserShortDto updateUser(Long id, UserDto userDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
         convertToUser(user, userDto);
         return convertToUserShortDto(userRepository.save(user));
     }
 
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
         userRepository.delete(user);
     }
 

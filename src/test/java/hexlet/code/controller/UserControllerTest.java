@@ -56,7 +56,7 @@ public class UserControllerTest {
         UserShortDto existingUser = testUtils.regDefaultUser();
 
         MockHttpServletResponse response = testUtils
-                .perform(get("/users/" + existingUser.getId()), existingUser.getEmail())
+                .performByUser(get("/users/" + existingUser.getId()), existingUser.getEmail())
                 .andReturn()
                 .getResponse();
 
@@ -105,7 +105,7 @@ public class UserControllerTest {
                 "password" : "123456"}""";
 
         MockHttpServletResponse response = testUtils
-                .perform(put("/users/" + existingUser.getId())
+                .performByUser(put("/users/" + existingUser.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content),
                         existingUser.getEmail())
@@ -129,7 +129,7 @@ public class UserControllerTest {
         UserShortDto existingUser = testUtils.regDefaultUser();
 
         MockHttpServletResponse response = testUtils
-                .perform(delete("/users/" + existingUser.getId()), existingUser.getEmail())
+                .performByUser(delete("/users/" + existingUser.getId()), existingUser.getEmail())
                 .andReturn()
                 .getResponse();
 

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -17,6 +18,7 @@ public final class UserDto {
     @Size(min = 1)
     private String lastName;
 
+    @NotBlank
     @Email
     private String email;
 
