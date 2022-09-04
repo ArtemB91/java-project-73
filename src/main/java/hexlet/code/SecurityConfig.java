@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -38,14 +39,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final PasswordEncoder passwordEncoder;
 
 
-    public SecurityConfig(@Value("${server.servlet.context-path}") final String baseUrl,
+    public SecurityConfig(@Value("${api-path}") final String baseApiPath,
                           final UserDetailsService userDetailsService,
                           final PasswordEncoder passwordEncoder, final JWTHelper jwtHelper) {
-        this.loginRequest = new AntPathRequestMatcher("/login", POST.toString());
+        this.loginRequest = new AntPathRequestMatcher(baseApiPath + "/login", POST.toString());
         this.publicUrls = new OrRequestMatcher(
                 loginRequest,
-                new AntPathRequestMatcher("/users"),
-                new AntPathRequestMatcher("/h2console/**")
+                new AntPathRequestMatcher(baseApiPath + "/users"),
+                new AntPathRequestMatcher("/h2console/**"),
+                new NegatedRequestMatcher(new AntPathRequestMatcher(baseApiPath + "/**"))
         );
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;

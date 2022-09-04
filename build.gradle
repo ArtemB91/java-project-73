@@ -6,6 +6,8 @@ plugins {
 	id 'jacoco'
 	id 'checkstyle'
 	id 'org.liquibase.gradle' version '2.1.0'
+	// Сборщик фронтенда
+	id 'org.siouan.frontend-jdk11' version '6.0.0'
 }
 
 group = 'hexlet.code'
@@ -76,3 +78,35 @@ liquibase {
 		}
 	}
 }
+
+// Сборка фронтенда.
+// Выполняется только если ничего не изменилось.
+// *****************************************************************************
+frontend {
+	nodeVersion = '16.13.1'
+	installScript = 'install'
+	assembleScript = 'run build'
+	packageJsonDirectory = file("${projectDir}/frontend")
+}
+
+def configFrontendTasks = {
+	inputs.files(fileTree("$projectDir/frontend").exclude('build', 'node_modules'))
+	outputs.dir("$buildDir/resources/main/static")
+}
+
+assembleFrontend {
+	configure configFrontendTasks
+
+	doLast {
+		copy {
+			from "$projectDir/frontend/build"
+			into "$buildDir/resources/main/static"
+		}
+	}
+}
+
+installFrontend {
+	configure configFrontendTasks
+}
+
+processResources.dependsOn assembleFrontend

@@ -38,3 +38,7 @@ out/
 
 *.db
 *.log
+
+node
+frontend/builds
+frontend/node_modules

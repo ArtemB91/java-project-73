@@ -1,3 +1,5 @@
+api-path: ""
+
 server:
   servlet:
     context-path: ""
