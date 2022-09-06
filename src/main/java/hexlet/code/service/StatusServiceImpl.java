@@ -4,6 +4,7 @@ import hexlet.code.dto.StatusDto;
 import hexlet.code.exceptions.DataNotFoundException;
 import hexlet.code.model.Status;
 import hexlet.code.repository.StatusRepository;
+import hexlet.code.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,9 +15,11 @@ public class StatusServiceImpl implements StatusService {
 
     private static final DataNotFoundException STATUS_NOT_FOUND = new DataNotFoundException("Status not found");
     private final StatusRepository statusRepository;
+    private final TaskRepository taskRepository;
 
-    public StatusServiceImpl(StatusRepository statusRepository) {
+    public StatusServiceImpl(StatusRepository statusRepository, TaskRepository taskRepository) {
         this.statusRepository = statusRepository;
+        this.taskRepository = taskRepository;
     }
 
     @Override
@@ -51,6 +54,11 @@ public class StatusServiceImpl implements StatusService {
     public void deleteStatus(Long id) {
         Status status = statusRepository.findById(id)
                 .orElseThrow(() -> STATUS_NOT_FOUND);
+
+        if (taskRepository.existsByTaskStatus(status)) {
+            throw new IllegalArgumentException("Deletion is prohibited. Status is used in tasks");
+        }
+
         statusRepository.delete(status);
     }
 

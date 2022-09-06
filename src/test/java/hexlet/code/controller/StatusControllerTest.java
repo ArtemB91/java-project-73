@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.web.servlet.MockMvc;
 
 import javax.transaction.Transactional;
 
@@ -32,9 +31,6 @@ public class StatusControllerTest {
     private TestUtils testUtils;
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private StatusRepository statusRepository;
 
     @BeforeEach
@@ -42,22 +38,11 @@ public class StatusControllerTest {
         testUtils.regDefaultUser();
     }
 
-    private StatusDto addTestStatus() throws Exception {
-        String content = "{ \"name\": \"testStatus\" }";
-        MockHttpServletResponse response = testUtils
-                .performByUser(post("/statuses")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andReturn()
-                .getResponse();
-        return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
-    }
 
 
     @Test
     public void testGetStatuses() throws Exception {
-        StatusDto statusDto = addTestStatus();
+        StatusDto statusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response =
                 testUtils.performByUser(get("/statuses"))
@@ -71,7 +56,7 @@ public class StatusControllerTest {
 
     @Test
     public void testGetOneStatus() throws Exception {
-        StatusDto statusDto = addTestStatus();
+        StatusDto statusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response =
                 testUtils.performByUser(get("/statuses/" + statusDto.getId()))
@@ -111,7 +96,7 @@ public class StatusControllerTest {
     public void testUpdateStatus() throws Exception {
 
         String contentToUpdate = "{ \"name\": \"done\" }";
-        StatusDto existingStatusDto = addTestStatus();
+        StatusDto existingStatusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response = testUtils
                 .performByUser(put("/statuses/" + existingStatusDto.getId())
@@ -130,7 +115,7 @@ public class StatusControllerTest {
 
     @Test
     public void testDeleteStatus() throws Exception {
-        StatusDto existingStatusDto = addTestStatus();
+        StatusDto existingStatusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response = testUtils
                 .performByUser(delete("/statuses/" + existingStatusDto.getId()))

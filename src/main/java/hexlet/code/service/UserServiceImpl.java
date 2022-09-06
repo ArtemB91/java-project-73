@@ -4,8 +4,10 @@ import hexlet.code.dto.UserDto;
 import hexlet.code.dto.UserShortDto;
 import hexlet.code.exceptions.DataNotFoundException;
 import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,11 +19,15 @@ import java.util.stream.StreamSupport;
 
 @Service
 public final class UserServiceImpl implements UserService, UserDetailsService {
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository,
+                           TaskRepository taskRepository,
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.taskRepository = taskRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -52,6 +58,14 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
+
+        // Сделаем проверку на уровне бизнес-логики, в т.ч. для выдачи человеко-читаемого сообщения.
+        // Без проверки сообщение также можно получить на уровне exception драйвера БД,
+        // но оно малоинформативно для пользователя сервиса
+        if (taskRepository.existsByAuthor(user)) {
+            throw new IllegalArgumentException("Deletion is prohibited. The user has tasks.");
+        }
+
         userRepository.delete(user);
     }
 
@@ -87,5 +101,17 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority("USER"))
         );
+    }
+
+    public User currentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String email = "";
+        if (principal instanceof UserDetails) {
+            email = ((UserDetails) principal).getUsername();
+        } else {
+            email = principal.toString();
+        }
+        return userRepository.findByEmail(email).orElse(null);
     }
 }

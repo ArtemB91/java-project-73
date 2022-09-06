@@ -4,9 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
+import hexlet.code.dto.StatusDto;
+import hexlet.code.dto.TaskDto;
+import hexlet.code.dto.TaskShortDto;
 import hexlet.code.dto.UserDto;
 import hexlet.code.dto.UserShortDto;
+import hexlet.code.model.User;
+import hexlet.code.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +27,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @Component
 public final class TestUtils {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,6 +60,40 @@ public final class TestUtils {
         userDto.setPassword("defaultPass");
 
         return userDto;
+    }
+
+    public StatusDto addTestStatus() throws Exception {
+        String content = "{ \"name\": \"testStatus\" }";
+        MockHttpServletResponse response =
+                performByUser(post("/statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn()
+                .getResponse();
+        return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
+        });
+    }
+
+    public TaskDto addTestTask() throws Exception {
+
+        User defUser = userRepository.findByEmail(defaultUserDto().getEmail()).get();
+        StatusDto testStatus = addTestStatus();
+
+        TaskShortDto taskToCreate = new TaskShortDto();
+        taskToCreate.setName("first task");
+        taskToCreate.setDescription("this is task for testing");
+        taskToCreate.setTaskStatusId(testStatus.getId());
+        taskToCreate.setExecutorId(defUser.getId());
+
+        MockHttpServletResponse response =
+                performByUser(post("/tasks")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(toJson(taskToCreate)))
+                        .andReturn()
+                        .getResponse();
+
+        return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
+        });
     }
 
     public static String toJson(final Object object) throws JsonProcessingException {
