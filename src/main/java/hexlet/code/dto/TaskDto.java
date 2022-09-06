@@ -1,5 +1,6 @@
 package hexlet.code.dto;
 
+import hexlet.code.model.Label;
 import hexlet.code.model.Status;
 import hexlet.code.model.User;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -32,4 +34,5 @@ public class TaskDto {
 
     private Date createdAt;
 
+    private List<Label> labels;
 }

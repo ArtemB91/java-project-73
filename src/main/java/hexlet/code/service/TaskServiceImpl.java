@@ -3,15 +3,18 @@ package hexlet.code.service;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskShortDto;
 import hexlet.code.exceptions.DataNotFoundException;
+import hexlet.code.model.Label;
 import hexlet.code.model.Status;
 import hexlet.code.model.Task;
 import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.StatusRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -22,15 +25,18 @@ public class TaskServiceImpl implements TaskService {
     private final StatusRepository statusRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final LabelRepository labelRepository;
 
     public TaskServiceImpl(TaskRepository taskRepository,
                            StatusRepository statusRepository,
                            UserRepository userRepository,
-                           UserService userService) {
+                           UserService userService,
+                           LabelRepository labelRepository) {
         this.taskRepository = taskRepository;
         this.statusRepository = statusRepository;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.labelRepository = labelRepository;
     }
 
     @Override
@@ -86,11 +92,20 @@ public class TaskServiceImpl implements TaskService {
 
         task.setAuthor(userService.currentUser());
 
+        task.setExecutor(null);
         if (taskShortDto.getExecutorId() != null) {
             User executor = userRepository.findById(taskShortDto.getExecutorId()).orElse(null);
             task.setExecutor(executor);
-        } else {
-            task.setExecutor(null);
+        }
+
+        task.setLabels(null);
+        if (taskShortDto.getLabelIds() != null) {
+            List<Label> labels = taskShortDto.getLabelIds().stream()
+                    .map(id -> labelRepository.findById(id)
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    String.format("Label with id %s not found", id))))
+                    .collect(Collectors.toList());
+            task.setLabels(labels);
         }
 
         return task;
@@ -105,6 +120,7 @@ public class TaskServiceImpl implements TaskService {
         taskDto.setAuthor(task.getAuthor());
         taskDto.setExecutor(task.getExecutor());
         taskDto.setCreatedAt(task.getCreatedAt());
+        taskDto.setLabels(task.getLabels());
 
         return taskDto;
     }

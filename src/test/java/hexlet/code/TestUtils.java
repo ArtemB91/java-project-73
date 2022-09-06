@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
+import hexlet.code.dto.LabelDto;
 import hexlet.code.dto.StatusDto;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskShortDto;
@@ -70,6 +71,18 @@ public final class TestUtils {
                         .content(content))
                 .andReturn()
                 .getResponse();
+        return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
+        });
+    }
+
+    public LabelDto addTestLabel() throws Exception {
+        String content = "{ \"name\": \"test label\" }";
+        MockHttpServletResponse response =
+                performByUser(post("/labels")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                        .andReturn()
+                        .getResponse();
         return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
         });
     }
