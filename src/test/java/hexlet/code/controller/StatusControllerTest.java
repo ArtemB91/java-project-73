@@ -86,7 +86,6 @@ public class StatusControllerTest {
         });
         Status status = statusRepository.findById(statusDto.getId()).get();
 
-        assertThat(statusRepository.count()).isEqualTo(1);
         assertThat(status).isNotNull();
         assertThat(status.getName()).isEqualTo("Working");
         assertThat(status.getCreatedAt()).isNotNull();

@@ -1,8 +1,11 @@
 package hexlet.code.controller;
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskShortDto;
+import hexlet.code.model.Task;
 import hexlet.code.service.TaskService;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/tasks")
@@ -38,8 +40,11 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskDto> getTasks() {
-        return taskService.getTasks();
+    public Iterable<TaskDto> getTasks(
+            @QuerydslPredicate(root = Task.class) Predicate predicate) {
+
+        return taskService.getTasks(predicate);
+
     }
 
     @PostMapping
@@ -60,4 +65,6 @@ public class TaskController {
     public void deleteTask(@PathVariable(value = "id") Long id) {
         taskService.deleteTask(id);
     }
+
+
 }

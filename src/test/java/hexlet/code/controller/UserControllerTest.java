@@ -85,8 +85,6 @@ public class UserControllerTest {
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
 
-        assertThat(userRepository.count()).isEqualTo(1);
-
         User user = userRepository.findByEmail("john@doe.com").get();
         assertThat(user).isNotNull();
         assertThat(user.getFirstName()).isEqualTo("John");

@@ -1,5 +1,6 @@
 package hexlet.code.service;
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskShortDto;
 import hexlet.code.exceptions.DataNotFoundException;
@@ -55,6 +56,18 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskDto> getTasks() {
         return StreamSupport.stream(taskRepository.findAll().spliterator(), false)
+                .map(this::convertToTaskDto)
+                .toList();
+    }
+
+    @Override
+    public List<TaskDto> getTasks(Predicate predicate) {
+
+        if (predicate == null) {
+            return getTasks();
+        }
+
+        return StreamSupport.stream(taskRepository.findAll(predicate).spliterator(), false)
                 .map(this::convertToTaskDto)
                 .toList();
     }

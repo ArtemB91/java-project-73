@@ -84,7 +84,6 @@ class LabelControllerTest {
         });
         Label label = labelRepository.findById(labelDto.getId()).get();
 
-        assertThat(labelRepository.count()).isEqualTo(1);
         assertThat(label).isNotNull();
         assertThat(label.getName()).isEqualTo("Working");
         assertThat(label.getCreatedAt()).isNotNull();
