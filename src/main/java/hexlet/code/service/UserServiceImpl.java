@@ -23,6 +23,8 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
     private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private static final DataNotFoundException USER_NOT_FOUND = new DataNotFoundException("User not found");
+
     public UserServiceImpl(UserRepository userRepository,
                            TaskRepository taskRepository,
                            PasswordEncoder passwordEncoder) {
@@ -33,7 +35,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
 
     public UserShortDto getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User not found"));
+                .orElseThrow(() -> USER_NOT_FOUND);
         return convertToUserShortDto(user);
     }
 
@@ -50,14 +52,14 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
 
     public UserShortDto updateUser(Long id, UserDto userDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User not found"));
+                .orElseThrow(() -> USER_NOT_FOUND);
         convertToUser(user, userDto);
         return convertToUserShortDto(userRepository.save(user));
     }
 
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("User not found"));
+                .orElseThrow(() -> USER_NOT_FOUND);
 
         // Сделаем проверку на уровне бизнес-логики, в т.ч. для выдачи человеко-читаемого сообщения.
         // Без проверки сообщение также можно получить на уровне exception драйвера БД,
@@ -94,7 +96,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> USER_NOT_FOUND);
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
