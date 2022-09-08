@@ -3,7 +3,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/3bb97dfc111f49556d50/maintainability)](https://codeclimate.com/github/ArtemB91/java-project-73/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/3bb97dfc111f49556d50/test_coverage)](https://codeclimate.com/github/ArtemB91/java-project-73/test_coverage)
 
-[Task Manager](https://bychkov-task-manager.herokuapp.com/) - task tracker system.
+[Task Manager](https://bychkov-task-manager.herokuapp.com/) - task management system. It allows you to set tasks, assign performers and change their statuses. Registration and authentication are required to work with the system.
 
 OpenAPI definition: https://bychkov-task-manager.herokuapp.com/swagger-ui.html 
 
