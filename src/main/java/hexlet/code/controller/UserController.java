@@ -3,6 +3,10 @@ package hexlet.code.controller;
 import hexlet.code.dto.UserDto;
 import hexlet.code.dto.UserShortDto;
 import hexlet.code.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,34 +37,66 @@ public class UserController {
             @userRepository.findById(#id).get().getEmail() == authentication.getName()
         """;
 
-
+    @Operation(summary = "Get specific user by his id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User found"),
+            @ApiResponse(responseCode = "404", description = "User with that id not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @GetMapping(path = "/{id}")
-    public UserShortDto getUser(@PathVariable(value = "id") Long id) {
+    public UserShortDto getUser(
+            @Parameter(description = "Id of user to be found")
+            @PathVariable(value = "id") Long id) {
         return userService.getUserById(id);
     }
 
 
+    @Operation(summary = "Create new user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User created"),
+            @ApiResponse(responseCode = "422", description = "Invalid user data")
+    })
     @PostMapping(path = "")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserShortDto createUser(@Valid @RequestBody UserDto userDto) {
+    public UserShortDto createUser(
+            @Parameter(description = "User data to create")
+            @Valid @RequestBody UserDto userDto) {
         return userService.createUser(userDto);
     }
 
+    @Operation(summary = "Get list of all users")
+    @ApiResponse(responseCode = "200", description = "List of all users")
     @GetMapping(path = "")
     public List<UserShortDto> getUsers() {
         return userService.getUsers();
     }
 
+    @Operation(summary = "Update existing user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated"),
+            @ApiResponse(responseCode = "404", description = "User with that id not found"),
+            @ApiResponse(responseCode = "422", description = "Invalid user data")
+    })
     @PutMapping(path = "/{id}")
     @PreAuthorize(ONLY_THE_SAME_USER)
-    public UserShortDto updateUser(@PathVariable(value = "id") Long id,
-                                   @Valid @RequestBody UserDto userDto) {
+    public UserShortDto updateUser(
+            @Parameter(description = "Id of user to be updated")
+            @PathVariable(value = "id") Long id,
+            @Parameter(description = "User data to update")
+            @Valid @RequestBody UserDto userDto) {
         return userService.updateUser(id, userDto);
     }
 
+    @Operation(summary = "Delete user by his id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User deleted"),
+            @ApiResponse(responseCode = "404", description = "User with that id not found")
+    })
     @DeleteMapping(path = "/{id}")
     @PreAuthorize(ONLY_THE_SAME_USER)
-    public void deleteUser(@PathVariable(value = "id") Long id) {
+    public void deleteUser(
+            @Parameter(description = "Id of user to be deleted")
+            @PathVariable(value = "id") Long id) {
         userService.deleteUser(id);
     }
 

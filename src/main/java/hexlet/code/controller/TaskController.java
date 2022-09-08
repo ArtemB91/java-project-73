@@ -5,6 +5,10 @@ import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskShortDto;
 import hexlet.code.model.Task;
 import hexlet.code.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,35 +38,68 @@ public class TaskController {
         this.taskService = taskService;
     }
 
+    @Operation(summary = "Get specific task by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task found"),
+            @ApiResponse(responseCode = "404", description = "Task with that id not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @GetMapping(path = "/{id}")
-    public TaskDto getOneTask(@PathVariable(value = "id") Long id) {
+    public TaskDto getOneTask(
+            @Parameter(description = "Id of label to be found")
+            @PathVariable(value = "id") Long id) {
         return taskService.getTaskById(id);
     }
 
+    @Operation(summary = "Get list of all tasks")
+    @ApiResponse(responseCode = "200", description = "List of all tasks")
     @GetMapping
     public Iterable<TaskDto> getTasks(
+            @Parameter(hidden = true)
             @QuerydslPredicate(root = Task.class) Predicate predicate) {
 
         return taskService.getTasks(predicate);
 
     }
 
+    @Operation(summary = "Create new task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Task created"),
+            @ApiResponse(responseCode = "422", description = "Invalid task data")
+    })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TaskDto createTask(@Valid @RequestBody TaskShortDto taskShortDto) {
+    public TaskDto createTask(
+            @Parameter(description = "Task data to create")
+            @Valid @RequestBody TaskShortDto taskShortDto) {
         return taskService.createTask(taskShortDto);
     }
 
+    @Operation(summary = "Update existing task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task updated"),
+            @ApiResponse(responseCode = "404", description = "Task with that id not found"),
+            @ApiResponse(responseCode = "422", description = "Invalid task data")
+    })
     @PutMapping(path = "/{id}")
     public TaskDto updateTask(
+            @Parameter(description = "Id of task to be updated")
             @PathVariable(value = "id") Long id,
+            @Parameter(description = "Task data to update")
             @Valid @RequestBody TaskShortDto taskShortDto) {
         return taskService.updateTask(id, taskShortDto);
     }
 
+    @Operation(summary = "Delete task by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task deleted"),
+            @ApiResponse(responseCode = "404", description = "Task with that id not found")
+    })
     @DeleteMapping(path = "/{id}")
     @PreAuthorize(ONLY_THE_AUTHOR)
-    public void deleteTask(@PathVariable(value = "id") Long id) {
+    public void deleteTask(
+            @Parameter(description = "Id of task to be deleted")
+            @PathVariable(value = "id") Long id) {
         taskService.deleteTask(id);
     }
 
