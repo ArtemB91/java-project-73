@@ -1,4 +1,4 @@
-package hexlet.code;
+package hexlet.code.config;
 
 import hexlet.code.component.JWTHelper;
 import hexlet.code.filter.JWTAuthorizationFilter;
