@@ -1,5 +1,6 @@
 package hexlet.code.controller;
 
+import com.rollbar.notifier.Rollbar;
 import hexlet.code.dto.UserDto;
 import hexlet.code.dto.UserShortDto;
 import hexlet.code.service.UserService;
@@ -29,6 +30,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private Rollbar rollbar;
 
     // Бин userService в глобальном контексте не нашел, поэтому надо либо обращаться к реализации,
     // либо через @Component делать бин заранее, либо к репо напрямую обращаться.
@@ -68,6 +72,7 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "List of all users")
     @GetMapping(path = "")
     public List<UserShortDto> getUsers() {
+        rollbar.info("Get users info message");
         return userService.getUsers();
     }
 

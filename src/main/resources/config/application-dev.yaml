@@ -21,6 +21,7 @@ spring:
 logging:
   level:
     root: INFO
+    com.rollbar.notifier: DEBUG
     org.springframework.web: DEBUG
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO
     #org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
