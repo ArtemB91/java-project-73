@@ -37,11 +37,13 @@ public class TaskControllerTest {
     @Autowired
     private UserRepository userRepository;
     private TaskDto testTaskDto;
+    private StatusDto testStatusDto;
 
     @BeforeEach
     public void beforeEach() throws Exception {
         testUtils.regDefaultUser();
-        testTaskDto = testUtils.addTestTask();
+        testStatusDto = testUtils.addTestStatus();
+        testTaskDto = testUtils.addTestTask(testStatusDto);
     }
 
     @Test
@@ -76,14 +78,13 @@ public class TaskControllerTest {
     @Test
     public void testCreateTask() throws Exception {
         User defUser = userRepository.findByEmail(testUtils.defaultUserDto().getEmail()).get();
-        StatusDto testStatus = testUtils.addTestStatus();
 
         String content = String.format("""
                 {"name": "simple task",
                 "description": "simple desc",
                 "taskStatusId": %s,
                 "executorId" : %s}""",
-                testStatus.getId(),
+                testStatusDto.getId(),
                 defUser.getId());
 
         MockHttpServletResponse response = testUtils
@@ -102,7 +103,7 @@ public class TaskControllerTest {
         assertThat(task).isNotNull();
         assertThat(task.getName()).isEqualTo("simple task");
         assertThat(task.getDescription()).isEqualTo("simple desc");
-        assertThat(task.getTaskStatus().getId()).isEqualTo(testStatus.getId());
+        assertThat(task.getTaskStatus().getId()).isEqualTo(testStatusDto.getId());
         assertThat(task.getAuthor().getId()).isEqualTo(defUser.getId());
         assertThat(task.getExecutor().getId()).isEqualTo(defUser.getId());
         assertThat(task.getCreatedAt()).isNotNull();

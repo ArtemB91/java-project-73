@@ -87,10 +87,9 @@ public final class TestUtils {
         });
     }
 
-    public TaskDto addTestTask() throws Exception {
+    public TaskDto addTestTask(StatusDto testStatus) throws Exception {
 
         User defUser = userRepository.findByEmail(defaultUserDto().getEmail()).get();
-        StatusDto testStatus = addTestStatus();
 
         TaskShortDto taskToCreate = new TaskShortDto();
         taskToCreate.setName("first task");
