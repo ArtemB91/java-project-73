@@ -46,7 +46,7 @@ public class StatusServiceImpl implements StatusService {
     public StatusDto updateStatus(Long id, StatusDto statusDto) {
         Status status = statusRepository.findById(id)
                 .orElseThrow(() -> STATUS_NOT_FOUND);
-        convertToStatus(statusDto, status);
+        fillStatus(statusDto, status);
         return convertToStatusDto(statusRepository.save(status));
     }
 
@@ -63,10 +63,10 @@ public class StatusServiceImpl implements StatusService {
     }
 
     private Status convertToStatus(StatusDto statusDto) {
-        return convertToStatus(statusDto, new Status());
+        return fillStatus(statusDto, new Status());
     }
 
-    private Status convertToStatus(StatusDto statusDto, Status status) {
+    private Status fillStatus(StatusDto statusDto, Status status) {
         status.setName(statusDto.getName());
         return status;
     }

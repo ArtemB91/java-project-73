@@ -53,7 +53,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
     public UserShortDto updateUser(Long id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> USER_NOT_FOUND);
-        convertToUser(user, userDto);
+        fillUser(user, userDto);
         return convertToUserShortDto(userRepository.save(user));
     }
 
@@ -81,7 +81,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
         );
     }
 
-    private User convertToUser(User user, UserDto userDto) {
+    private User fillUser(User user, UserDto userDto) {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
@@ -90,7 +90,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
         return user;
     }
     private User convertToUser(UserDto userDto) {
-        return convertToUser(new User(), userDto);
+        return fillUser(new User(), userDto);
     }
 
     @Override
@@ -105,15 +105,13 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
         );
     }
 
-    public User currentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    @Override
+    public String currentUserName() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 
-        String email = "";
-        if (principal instanceof UserDetails) {
-            email = ((UserDetails) principal).getUsername();
-        } else {
-            email = principal.toString();
-        }
-        return userRepository.findByEmail(email).orElse(null);
+    @Override
+    public User currentUser() {
+        return userRepository.findByEmail(currentUserName()).get();
     }
 }

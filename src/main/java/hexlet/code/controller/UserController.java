@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,11 +27,13 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final Rollbar rollbar;
 
-    @Autowired
-    private Rollbar rollbar;
+    public UserController(UserService userService, Rollbar rollbar) {
+        this.userService = userService;
+        this.rollbar = rollbar;
+    }
 
     // Бин userService в глобальном контексте не нашел, поэтому надо либо обращаться к реализации,
     // либо через @Component делать бин заранее, либо к репо напрямую обращаться.

@@ -15,6 +15,7 @@ import hexlet.code.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -76,7 +77,7 @@ public class TaskServiceImpl implements TaskService {
     public TaskDto updateTask(Long id, TaskShortDto taskShortDto) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> TASK_NOT_FOUND);
-        convertToTask(taskShortDto, task);
+        fillTask(taskShortDto, task);
         return convertToTaskDto(taskRepository.save(task));
     }
 
@@ -88,38 +89,41 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private Task convertToTask(TaskShortDto taskShortDto) {
-        return convertToTask(taskShortDto, new Task());
+        return fillTask(taskShortDto, new Task());
     }
 
-    private Task convertToTask(TaskShortDto taskShortDto, Task task) {
+    private Task fillTask(TaskShortDto taskShortDto, Task task) {
         task.setName(taskShortDto.getName());
         task.setDescription(taskShortDto.getDescription());
 
         // Добавил доп. проверку на уровне бизнес-логики
         // Да, ошибка вылетит и при записи в БД, т.к. поле NotNull,
         // но считаю, что и на уровне бизнес-логики надо проверить для выдачи нормального сообщения
-        Status status = statusRepository.findById(taskShortDto.getTaskStatusId())
+        final Status status = statusRepository.findById(taskShortDto.getTaskStatusId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         String.format("Status with id %s not found", taskShortDto.getTaskStatusId())));
         task.setTaskStatus(status);
 
         task.setAuthor(userService.currentUser());
 
-        task.setExecutor(null);
-        if (taskShortDto.getExecutorId() != null) {
-            User executor = userRepository.findById(taskShortDto.getExecutorId()).orElse(null);
-            task.setExecutor(executor);
-        }
+        final User executor = Optional.ofNullable(taskShortDto.getExecutorId())
+                        .map(id -> userRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                String.format("Status with id %s not found", id))))
+                .orElse(null);
 
-        task.setLabels(null);
-        if (taskShortDto.getLabelIds() != null) {
-            List<Label> labels = taskShortDto.getLabelIds().stream()
-                    .map(id -> labelRepository.findById(id)
-                            .orElseThrow(() -> new IllegalArgumentException(
-                                    String.format("Label with id %s not found", id))))
-                    .collect(Collectors.toList());
-            task.setLabels(labels);
-        }
+        task.setExecutor(executor);
+
+
+        final List<Label> labels = Optional.ofNullable(taskShortDto.getLabelIds())
+                .map(ids -> ids.stream()
+                        .map(id -> labelRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                        String.format("Label with id %s not found", id))))
+                        .collect(Collectors.toList()))
+                .orElse(null);
+
+        task.setLabels(labels);
 
         return task;
     }

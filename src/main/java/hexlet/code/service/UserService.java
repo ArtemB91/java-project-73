@@ -20,4 +20,6 @@ public interface UserService {
 
     User currentUser();
 
+    String currentUserName();
+
 }

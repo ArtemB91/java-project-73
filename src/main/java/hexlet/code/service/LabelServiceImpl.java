@@ -46,7 +46,7 @@ public class LabelServiceImpl implements LabelService {
     public LabelDto updateLabel(Long id, LabelDto labelDto) {
         Label label = labelRepository.findById(id)
                 .orElseThrow(() -> LABEL_NOT_FOUND);
-        convertToLabel(labelDto, label);
+        fillLabel(labelDto, label);
         return convertToLabelDto(labelRepository.save(label));
     }
 
@@ -63,10 +63,10 @@ public class LabelServiceImpl implements LabelService {
     }
 
     private Label convertToLabel(LabelDto labelDto) {
-        return convertToLabel(labelDto, new Label());
+        return fillLabel(labelDto, new Label());
     }
 
-    private Label convertToLabel(LabelDto labelDto, Label label) {
+    private Label fillLabel(LabelDto labelDto, Label label) {
         label.setName(labelDto.getName());
         return label;
     }
