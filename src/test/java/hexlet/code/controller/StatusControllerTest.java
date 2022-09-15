@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class StatusControllerTest {
+class StatusControllerTest {
 
     @Autowired
     private TestUtils testUtils;
@@ -34,14 +34,14 @@ public class StatusControllerTest {
     private StatusRepository statusRepository;
 
     @BeforeEach
-    public void beforeEach() throws Exception {
+    void beforeEach() throws Exception {
         testUtils.regDefaultUser();
     }
 
 
 
     @Test
-    public void testGetStatuses() throws Exception {
+    void testGetStatuses() throws Exception {
         StatusDto statusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response =
@@ -55,7 +55,7 @@ public class StatusControllerTest {
     }
 
     @Test
-    public void testGetOneStatus() throws Exception {
+    void testGetOneStatus() throws Exception {
         StatusDto statusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response =
@@ -70,13 +70,13 @@ public class StatusControllerTest {
 
 
     @Test
-    public void testCreateStatus() throws Exception {
-        String content = "{ \"name\": \"Working\" }";
+    void testCreateStatus() throws Exception {
+        StatusDto statusToCreate = new StatusDto("Working");
 
         MockHttpServletResponse response = testUtils
                 .performByUser(post("/statuses")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(TestUtils.toJson(statusToCreate)))
                 .andReturn()
                 .getResponse();
 
@@ -87,20 +87,20 @@ public class StatusControllerTest {
         Status status = statusRepository.findById(statusDto.getId()).get();
 
         assertThat(status).isNotNull();
-        assertThat(status.getName()).isEqualTo("Working");
+        assertThat(status.getName()).isEqualTo(statusToCreate.getName());
         assertThat(status.getCreatedAt()).isNotNull();
     }
 
     @Test
-    public void testUpdateStatus() throws Exception {
+    void testUpdateStatus() throws Exception {
 
-        String contentToUpdate = "{ \"name\": \"done\" }";
+        StatusDto statusToUpdate = new StatusDto("done");
         StatusDto existingStatusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response = testUtils
                 .performByUser(put("/statuses/" + existingStatusDto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentToUpdate))
+                        .content(TestUtils.toJson(statusToUpdate)))
                 .andReturn()
                 .getResponse();
 
@@ -108,12 +108,12 @@ public class StatusControllerTest {
 
         Status status = statusRepository.findById(existingStatusDto.getId()).get();
         assertThat(status).isNotNull();
-        assertThat(status.getName()).isEqualTo("done");
+        assertThat(status.getName()).isEqualTo(statusToUpdate.getName());
         assertThat(status.getCreatedAt()).isNotNull();
     }
 
     @Test
-    public void testDeleteStatus() throws Exception {
+    void testDeleteStatus() throws Exception {
         StatusDto existingStatusDto = testUtils.addTestStatus();
 
         MockHttpServletResponse response = testUtils

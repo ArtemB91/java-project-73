@@ -5,8 +5,6 @@ import hexlet.code.dto.LoginDto;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolation;
@@ -23,25 +21,30 @@ public class AuthServiceImpl implements AuthService {
     private final Validator validator;
     private final JWTHelper jwtHelper;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
 
-    public AuthServiceImpl(Validator validator, JWTHelper jwtHelper, AuthenticationManager authenticationManager) {
+    public AuthServiceImpl(Validator validator,
+                           JWTHelper jwtHelper,
+                           AuthenticationManager authenticationManager,
+                           UserService userService) {
         this.validator = validator;
         this.jwtHelper = jwtHelper;
         this.authenticationManager = authenticationManager;
+        this.userService = userService;
     }
 
     @Override
     public String getToken(LoginDto loginDto) throws BadCredentialsException {
         validateLoginData(loginDto);
 
-        Authentication authResult = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getEmail(), loginDto.getPassword()
                 )
         );
 
-        final UserDetails user = (UserDetails) authResult.getPrincipal();
-        final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, user.getUsername()));
+        String currentUserName = userService.currentUserName();
+        final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, currentUserName));
 
         return token;
     }

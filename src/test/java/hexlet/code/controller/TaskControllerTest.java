@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.TestUtils;
 import hexlet.code.dto.StatusDto;
 import hexlet.code.dto.TaskDto;
+import hexlet.code.dto.TaskShortDto;
 import hexlet.code.model.Task;
 import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class TaskControllerTest {
+class TaskControllerTest {
 
     @Autowired
     private TestUtils testUtils;
@@ -40,14 +41,14 @@ public class TaskControllerTest {
     private StatusDto testStatusDto;
 
     @BeforeEach
-    public void beforeEach() throws Exception {
+    void beforeEach() throws Exception {
         testUtils.regDefaultUser();
         testStatusDto = testUtils.addTestStatus();
         testTaskDto = testUtils.addTestTask(testStatusDto);
     }
 
     @Test
-    public void testGetTasks() throws Exception {
+    void testGetTasks() throws Exception {
         MockHttpServletResponse response =
                 testUtils.performByUser(get("/tasks"))
                         .andReturn()
@@ -59,7 +60,7 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void testGetOneTask() throws Exception {
+    void testGetOneTask() throws Exception {
 
         MockHttpServletResponse response =
                 testUtils.performByUser(get("/tasks/" + testTaskDto.getId()))
@@ -71,13 +72,18 @@ public class TaskControllerTest {
         assertThat(response.getContentAsString()).contains(
                 testTaskDto.getName(),
                 testTaskDto.getDescription(),
-                testTaskDto.getTaskStatus().getName(),
                 testTaskDto.getAuthor().getEmail());
     }
 
     @Test
-    public void testCreateTask() throws Exception {
+    void testCreateTask() throws Exception {
         User defUser = userRepository.findByEmail(testUtils.defaultUserDto().getEmail()).get();
+
+        TaskShortDto taskToCreate = new TaskShortDto();
+        taskToCreate.setName("simple task");
+        taskToCreate.setDescription("simple desc");
+        taskToCreate.setTaskStatusId(testStatusDto.getId());
+        taskToCreate.setExecutorId(defUser.getId());
 
         String content = String.format("""
                 {"name": "simple task",
@@ -101,30 +107,27 @@ public class TaskControllerTest {
 
         Task task = taskRepository.findById(taskDto.getId()).orElse(null);
         assertThat(task).isNotNull();
-        assertThat(task.getName()).isEqualTo("simple task");
-        assertThat(task.getDescription()).isEqualTo("simple desc");
-        assertThat(task.getTaskStatus().getId()).isEqualTo(testStatusDto.getId());
+        assertThat(task.getName()).isEqualTo(taskToCreate.getName());
+        assertThat(task.getDescription()).isEqualTo(taskToCreate.getDescription());
+        assertThat(task.getTaskStatus().getId()).isEqualTo(taskToCreate.getTaskStatusId());
         assertThat(task.getAuthor().getId()).isEqualTo(defUser.getId());
-        assertThat(task.getExecutor().getId()).isEqualTo(defUser.getId());
+        assertThat(task.getExecutor().getId()).isEqualTo(taskToCreate.getExecutorId());
         assertThat(task.getCreatedAt()).isNotNull();
 
     }
 
     @Test
-    public void testUpdateTask() throws Exception {
-        String contentToUpdate = String.format("""
-                {"name": "updated name",
-                "description": "updated desc",
-                "taskStatusId": %s,
-                "executorId" : %s}""",
-                testTaskDto.getTaskStatus().getId(),
-                null);
+    void testUpdateTask() throws Exception {
 
+        TaskShortDto taskToUpdate = new TaskShortDto();
+        taskToUpdate.setName("updated name");
+        taskToUpdate.setDescription("updated desc");
+        taskToUpdate.setTaskStatusId(testTaskDto.getTaskStatus().getId());
 
         MockHttpServletResponse response = testUtils
                 .performByUser(put("/tasks/" + testTaskDto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentToUpdate))
+                        .content(TestUtils.toJson(taskToUpdate)))
                 .andReturn()
                 .getResponse();
 
@@ -135,14 +138,14 @@ public class TaskControllerTest {
 
         Task task = taskRepository.findById(taskDto.getId()).orElse(null);
         assertThat(task).isNotNull();
-        assertThat(task.getName()).isEqualTo("updated name");
-        assertThat(task.getDescription()).isEqualTo("updated desc");
+        assertThat(task.getName()).isEqualTo(taskToUpdate.getName());
+        assertThat(task.getDescription()).isEqualTo(taskToUpdate.getDescription());
         assertThat(task.getExecutor()).isNull();
         assertThat(task.getCreatedAt()).isNotNull();
     }
 
     @Test
-    public void testDeleteTask() throws Exception {
+    void testDeleteTask() throws Exception {
         MockHttpServletResponse response = testUtils
                 .performByUser(delete("/tasks/" + testTaskDto.getId()))
                 .andReturn()

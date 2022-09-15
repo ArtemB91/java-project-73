@@ -49,4 +49,7 @@ public final class User {
     @CreatedDate
     private Date createdAt;
 
+    public User(long id) {
+        this.id = id;
+    }
 }

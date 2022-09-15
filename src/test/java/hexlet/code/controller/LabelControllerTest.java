@@ -69,12 +69,12 @@ class LabelControllerTest {
 
     @Test
     void testCreateLabel() throws Exception {
-        String content = "{ \"name\": \"Working\" }";
+        LabelDto labelToCreate = new LabelDto("Working");
 
         MockHttpServletResponse response = testUtils
                 .performByUser(post("/labels")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(TestUtils.toJson(labelToCreate)))
                 .andReturn()
                 .getResponse();
 
@@ -85,20 +85,20 @@ class LabelControllerTest {
         Label label = labelRepository.findById(labelDto.getId()).get();
 
         assertThat(label).isNotNull();
-        assertThat(label.getName()).isEqualTo("Working");
+        assertThat(label.getName()).isEqualTo(labelToCreate.getName());
         assertThat(label.getCreatedAt()).isNotNull();
     }
 
     @Test
     void testUpdateLabel() throws Exception {
 
-        String contentToUpdate = "{ \"name\": \"done\" }";
+        LabelDto labelToUpdate = new LabelDto("done");
         LabelDto existingLabelDto = testUtils.addTestLabel();
 
         MockHttpServletResponse response = testUtils
                 .performByUser(put("/labels/" + existingLabelDto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentToUpdate))
+                        .content(TestUtils.toJson(labelToUpdate)))
                 .andReturn()
                 .getResponse();
 
@@ -106,7 +106,7 @@ class LabelControllerTest {
 
         Label label = labelRepository.findById(existingLabelDto.getId()).get();
         assertThat(label).isNotNull();
-        assertThat(label.getName()).isEqualTo("done");
+        assertThat(label.getName()).isEqualTo(labelToUpdate.getName());
         assertThat(label.getCreatedAt()).isNotNull();
     }
 

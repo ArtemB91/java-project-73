@@ -50,6 +50,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDto createTask(TaskShortDto taskShortDto) {
+        validateTaskDto(taskShortDto);
         Task task = convertToTask(taskShortDto);
         return convertToTaskDto(taskRepository.save(task));
     }
@@ -77,6 +78,7 @@ public class TaskServiceImpl implements TaskService {
     public TaskDto updateTask(Long id, TaskShortDto taskShortDto) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> TASK_NOT_FOUND);
+        validateTaskDto(taskShortDto);
         fillTask(taskShortDto, task);
         return convertToTaskDto(taskRepository.save(task));
     }
@@ -96,20 +98,13 @@ public class TaskServiceImpl implements TaskService {
         task.setName(taskShortDto.getName());
         task.setDescription(taskShortDto.getDescription());
 
-        // Добавил доп. проверку на уровне бизнес-логики
-        // Да, ошибка вылетит и при записи в БД, т.к. поле NotNull,
-        // но считаю, что и на уровне бизнес-логики надо проверить для выдачи нормального сообщения
-        final Status status = statusRepository.findById(taskShortDto.getTaskStatusId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        String.format("Status with id %s not found", taskShortDto.getTaskStatusId())));
+        final Status status = new Status(taskShortDto.getTaskStatusId());
         task.setTaskStatus(status);
 
         task.setAuthor(userService.currentUser());
 
         final User executor = Optional.ofNullable(taskShortDto.getExecutorId())
-                        .map(id -> userRepository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                String.format("Status with id %s not found", id))))
+                .map(User::new)
                 .orElse(null);
 
         task.setExecutor(executor);
@@ -117,15 +112,30 @@ public class TaskServiceImpl implements TaskService {
 
         final List<Label> labels = Optional.ofNullable(taskShortDto.getLabelIds())
                 .map(ids -> ids.stream()
-                        .map(id -> labelRepository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                        String.format("Label with id %s not found", id))))
+                        .map(Label::new)
                         .collect(Collectors.toList()))
                 .orElse(null);
 
         task.setLabels(labels);
 
         return task;
+    }
+
+    private void validateTaskDto(TaskShortDto taskShortDto) {
+        statusRepository.findById(taskShortDto.getTaskStatusId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("Status with id %s not found", taskShortDto.getTaskStatusId())));
+
+        Optional.ofNullable(taskShortDto.getExecutorId())
+                .map(id -> userRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                String.format("User with id %s not found", id))));
+
+        Optional.ofNullable(taskShortDto.getLabelIds())
+                .map(ids -> ids.stream()
+                        .map(id -> labelRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                        String.format("Label with id %s not found", id)))));
     }
 
     private TaskDto convertToTaskDto(Task task) {

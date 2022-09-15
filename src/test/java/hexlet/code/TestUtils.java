@@ -64,11 +64,11 @@ public final class TestUtils {
     }
 
     public StatusDto addTestStatus() throws Exception {
-        String content = "{ \"name\": \"testStatus\" }";
+        StatusDto statusDto = new StatusDto("testStatus");
         MockHttpServletResponse response =
                 performByUser(post("/statuses")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(toJson(statusDto)))
                 .andReturn()
                 .getResponse();
         return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
@@ -76,11 +76,11 @@ public final class TestUtils {
     }
 
     public LabelDto addTestLabel() throws Exception {
-        String content = "{ \"name\": \"test label\" }";
+        LabelDto labelDto = new LabelDto("test label");
         MockHttpServletResponse response =
                 performByUser(post("/labels")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(toJson(labelDto)))
                         .andReturn()
                         .getResponse();
         return TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {

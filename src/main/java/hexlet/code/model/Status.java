@@ -38,4 +38,8 @@ public class Status {
 
     @CreatedDate
     private Date createdAt;
+
+    public Status(Long id) {
+        this.id = id;
+    }
 }

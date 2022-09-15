@@ -39,4 +39,7 @@ public class Label {
     @CreatedDate
     private Date createdAt;
 
+    public Label(Long id) {
+        this.id = id;
+    }
 }

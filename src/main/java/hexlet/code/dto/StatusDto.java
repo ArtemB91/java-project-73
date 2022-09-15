@@ -1,11 +1,17 @@
 package hexlet.code.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.Size;
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class StatusDto {
 
     private Long id;
@@ -14,4 +20,8 @@ public class StatusDto {
     private String name;
 
     private Date createdAt;
+
+    public StatusDto(String name) {
+        this.name = name;
+    }
 }
