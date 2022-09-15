@@ -21,16 +21,13 @@ public class AuthServiceImpl implements AuthService {
     private final Validator validator;
     private final JWTHelper jwtHelper;
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
 
     public AuthServiceImpl(Validator validator,
                            JWTHelper jwtHelper,
-                           AuthenticationManager authenticationManager,
-                           UserService userService) {
+                           AuthenticationManager authenticationManager) {
         this.validator = validator;
         this.jwtHelper = jwtHelper;
         this.authenticationManager = authenticationManager;
-        this.userService = userService;
     }
 
     @Override
@@ -43,8 +40,7 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        String currentUserName = userService.currentUserName();
-        final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, currentUserName));
+        final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, loginDto.getEmail()));
 
         return token;
     }
