@@ -85,18 +85,11 @@ class TaskControllerTest {
         taskToCreate.setTaskStatusId(testStatusDto.getId());
         taskToCreate.setExecutorId(defUser.getId());
 
-        String content = String.format("""
-                {"name": "simple task",
-                "description": "simple desc",
-                "taskStatusId": %s,
-                "executorId" : %s}""",
-                testStatusDto.getId(),
-                defUser.getId());
 
         MockHttpServletResponse response = testUtils
                 .performByUser(post("/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(TestUtils.toJson(taskToCreate)))
                 .andReturn()
                 .getResponse();
 
