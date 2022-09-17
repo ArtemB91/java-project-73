@@ -1,6 +1,8 @@
 package hexlet.code.controller;
 
 import hexlet.code.TestUtils;
+import hexlet.code.dto.LoginDto;
+import hexlet.code.dto.UserDto;
 import hexlet.code.dto.UserShortDto;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
@@ -24,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired
     private TestUtils testUtils;
@@ -36,7 +38,7 @@ public class UserControllerTest {
     private UserRepository userRepository;
 
     @Test
-    public void testGetUsers() throws Exception {
+    void testGetUsers() throws Exception {
 
         UserShortDto existingUser = testUtils.regDefaultUser();
 
@@ -51,7 +53,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetOneUser() throws Exception {
+    void testGetOneUser() throws Exception {
 
         UserShortDto existingUser = testUtils.regDefaultUser();
 
@@ -69,61 +71,62 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUser() throws Exception {
-        String content = """
-                {"firstName": "John",
-                "lastName": "Doe",
-                "email": "john@doe.com",
-                "password" : "123456"}""";
+    void testCreateUser() throws Exception {
+
+        UserDto userToCreate = new UserDto();
+        userToCreate.setFirstName("John");
+        userToCreate.setLastName("Doe");
+        userToCreate.setEmail("john@doe.com");
+        userToCreate.setPassword("123456");
+
 
         MockHttpServletResponse response = mockMvc
                 .perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(TestUtils.toJson(userToCreate)))
                 .andReturn()
                 .getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
 
-        User user = userRepository.findByEmail("john@doe.com").get();
+        User user = userRepository.findByEmail(userToCreate.getEmail()).orElse(null);
         assertThat(user).isNotNull();
-        assertThat(user.getFirstName()).isEqualTo("John");
-        assertThat(user.getPassword()).isNotEqualTo("123456");
+        assertThat(user.getFirstName()).isEqualTo(userToCreate.getFirstName());
+        assertThat(user.getPassword()).isNotEqualTo(userToCreate.getPassword());
     }
 
     @Test
-    public void testUpdateUser() throws Exception {
+    void testUpdateUser() throws Exception {
 
         UserShortDto existingUser = testUtils.regDefaultUser();
-
-        String content = """
-                {"firstName": "John",
-                "lastName": "Doe",
-                "email": "john@doe.com",
-                "password" : "123456"}""";
+        UserDto userToUpdate = new UserDto();
+        userToUpdate.setFirstName("John");
+        userToUpdate.setLastName("Doe");
+        userToUpdate.setEmail("john@doe.com");
+        userToUpdate.setPassword("123456");
 
         MockHttpServletResponse response = testUtils
                 .performByUser(put("/users/" + existingUser.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content),
+                                .content(TestUtils.toJson(userToUpdate)),
                         existingUser.getEmail())
                 .andReturn()
                 .getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 
-        User user = userRepository.findById(existingUser.getId()).get();
+        User user = userRepository.findById(existingUser.getId()).orElse(null);
         assertThat(user).isNotNull();
-        assertThat(user.getFirstName()).isEqualTo("John");
-        assertThat(user.getLastName()).isEqualTo("Doe");
-        assertThat(user.getEmail()).isEqualTo("john@doe.com");
+        assertThat(user.getFirstName()).isEqualTo(userToUpdate.getFirstName());
+        assertThat(user.getLastName()).isEqualTo(userToUpdate.getLastName());
+        assertThat(user.getEmail()).isEqualTo(userToUpdate.getEmail());
 
-        assertThat(user.getPassword()).isNotEqualTo("123456");
+        assertThat(user.getPassword()).isNotEqualTo(userToUpdate.getPassword());
 
     }
 
     @Test
-    public void testDeleteUser() throws Exception {
+    void testDeleteUser() throws Exception {
         UserShortDto existingUser = testUtils.regDefaultUser();
 
         MockHttpServletResponse response = testUtils
@@ -136,19 +139,17 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testLogin() throws Exception {
+    void testLogin() throws Exception {
         UserShortDto existingUser = testUtils.regDefaultUser();
 
-        String content = String.format("""
-                {"email": "%s",
-                "password" : "%s"}""",
-                existingUser.getEmail(),
-                testUtils.defaultUserDto().getPassword());
+        LoginDto loginDto = new LoginDto();
+        loginDto.setEmail(existingUser.getEmail());
+        loginDto.setPassword(testUtils.defaultUserDto().getPassword());
 
         MockHttpServletResponse response = testUtils
                 .perform(post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(TestUtils.toJson(loginDto)))
                 .andReturn()
                 .getResponse();
 
