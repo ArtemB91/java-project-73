@@ -1,6 +1,7 @@
 package hexlet.code.filter;
 
 import hexlet.code.component.JWTHelper;
+import io.jsonwebtoken.ClaimJwtException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -40,14 +41,21 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                                     final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
 
-        final UsernamePasswordAuthenticationToken authToken = Optional.ofNullable(request.getHeader(AUTHORIZATION))
-                .map(header -> header.replaceFirst("^" + BEARER, ""))
-                .map(String::trim)
-                .map(jwtHelper::verify)
-                .map(claims -> claims.get(SPRING_SECURITY_FORM_USERNAME_KEY))
-                .map(Object::toString)
-                .map(this::buildAuthToken)
-                .orElse(null);
+        UsernamePasswordAuthenticationToken authToken = null;
+        try {
+            authToken = Optional.ofNullable(request.getHeader(AUTHORIZATION))
+                    .map(header -> header.replaceFirst("^" + BEARER, ""))
+                    .map(String::trim)
+                    .map(jwtHelper::verify)
+                    .map(claims -> claims.get(SPRING_SECURITY_FORM_USERNAME_KEY))
+                    .map(Object::toString)
+                    .map(this::buildAuthToken)
+                    .orElse(null);
+        } catch (ClaimJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(e.getMessage());
+            return;
+        }
 
         if (authToken == null) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
