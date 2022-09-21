@@ -6,6 +6,7 @@ import hexlet.code.exceptions.DataNotFoundException;
 import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -96,7 +97,7 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> USER_NOT_FOUND);
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -112,6 +113,6 @@ public final class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User currentUser() {
-        return userRepository.findByEmail(currentUserName()).get();
+        return userRepository.findByEmail(currentUserName()).orElse(null);
     }
 }
